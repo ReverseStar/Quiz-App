@@ -4,9 +4,12 @@ import QuizCard from "../components/QuizCard";
 import "./Home.css";
 import { Button, Modal } from "react-bootstrap";
 import CreateQuizModal from "../components/CreateQuizModal";
+import useLocalStorage from '../hooks/useLocalStorage';
 
 const Home = () => {
     const navigate = useNavigate();
+
+    const [quizzes] = useLocalStorage('quizzes', []);
 
     return (
         <>
@@ -23,18 +26,9 @@ const Home = () => {
                     </div>
                 </div>
                 <div className="quizes">
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
-                    <QuizCard />
+                    {quizzes.map((quiz) => {
+                        return <QuizCard quiz={quiz}/>
+                    })}
                 </div>
             </div>
         </>

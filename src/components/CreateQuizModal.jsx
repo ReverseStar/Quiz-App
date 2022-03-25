@@ -2,34 +2,110 @@ import { Modal, Button, Form, Stack } from "react-bootstrap";
 import { useState } from "react";
 
 function CreateQuizModal(props) {
-    const [options, setOptions] = useState([
-        {
-            text: "",
-            isCorrect: false,
-        },
-        {
-            text: "",
-            isCorrect: false,
-        },
-    ]);
-
-    const [correctOptions, setCorrectOptions] = useState([]);
+    const [formValues, setFormValues] = useState({
+        question: "",
+        imageURL: "",
+        questionType: "Multiple",
+        points: 1,
+        options: [
+            {
+                text: "",
+                isCorrect: false,
+            },
+            {
+                text: "",
+                isCorrect: false,
+            },
+        ],
+    });
 
     const handleAdd = () => {
-        setOptions((prev) => {
-            return [
+        setFormValues((prev) => {
+            return {
                 ...prev,
+                options: [
+                    ...prev.options,
+                    {
+                        text: "",
+                        isCorrect: false,
+                    },
+                ],
+            };
+        });
+    };
+
+    const handleChange = (e) => {
+        setFormValues((prev) => {
+            return {
+                ...prev,
+                [e.target.name]: e.target.value,
+            };
+        });
+        // (prev) => (true)
+        // (prev) => {
+        //     return true
+        // }
+    };
+
+    const handleOptionChange = (e, index) => {
+        setFormValues((prev) => {
+            let newOptions = formValues.options;
+            newOptions[index].text = e.target.value;
+            console.log(e.target.value);
+            return {
+                ...prev,
+                options: newOptions,
+            };
+        });
+    };
+
+    const handleCheckboxChange = (e, index) => {
+        if (e.target.checked && formValues.questionType === "Single") {
+            uncheckAll();
+        }
+        setFormValues((prev) => {
+            let newOptions = formValues.options;
+            newOptions[index].isCorrect = e.target.checked;
+            console.log(e.target.checked);
+            return {
+                ...prev,
+                options: newOptions,
+            };
+        });
+    };
+
+    const uncheckAll = () => {
+        formValues.options.forEach((option) => {
+            option.isCorrect = false;
+        });
+    };
+
+    const handleSave = () => {
+        props.onHide();
+        formValues.points = parseInt(formValues.points);
+        props.onSave(formValues);
+        setFormValues({
+            question: "",
+            imageURL: "",
+            questionType: "Multiple",
+            points: 1,
+            options: [
                 {
                     text: "",
                     isCorrect: false,
                 },
-            ];
+                {
+                    text: "",
+                    isCorrect: false,
+                },
+            ],
         });
     };
 
     return (
         <Modal
-            {...props}
+            show={props.show}
+            onHide={props.onHide}
             size="lg"
             aria-labelledby="contained-modal-title-vcenter"
             centered
@@ -46,6 +122,9 @@ function CreateQuizModal(props) {
                         <Form.Control
                             type="email"
                             placeholder="Enter Question"
+                            name="question"
+                            value={formValues.question}
+                            onChange={handleChange}
                         />
                     </Form.Group>
 
@@ -54,34 +133,68 @@ function CreateQuizModal(props) {
                         <Form.Control
                             type="text"
                             placeholder="Enter Image URL"
+                            name="imageURL"
+                            value={formValues.imageURL}
+                            onChange={handleChange}
                         />
                     </Form.Group>
 
                     <Form.Label>Select Question Type</Form.Label>
-                    <Form.Select>
-                        <option>Default</option>
+                    <Form.Select
+                        name="questionType"
+                        value={formValues.questionType}
+                        onChange={(e) => {
+                            handleChange(e);
+                            uncheckAll();
+                        }}
+                    >
                         <option>Single</option>
                         <option>Multiple</option>
-                        <option>Undefined</option>
                     </Form.Select>
 
+                    <Form.Label>Add Quiz Points</Form.Label>
+                    <Form.Select
+                        name="points"
+                        value={formValues.points}
+                        onChange={handleChange}
+                    >
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                    </Form.Select>
                     <Form.Group controlId="formFileMultiple" className="mb-3">
                         <Form.Label>Add File</Form.Label>
                         <Form.Control type="file" multiple />
                     </Form.Group>
 
                     <div className="options-container mb-2">
-                        {options.map((option, index) => {
+                        {formValues.options.map((option, index) => {
                             return (
                                 <>
                                     <div className="option d-flex mb-2">
                                         <Form.Check
+                                            checked={option.isCorrect}
                                             inline
-                                            name={`{group ${index + 1}}`}
+                                            name="isCorrect"
+                                            onChange={(e) =>
+                                                handleCheckboxChange(e, index)
+                                            }
                                         />
                                         <Form.Control
                                             placeholder={`Option ${index + 1}`}
+                                            value={option.text}
+                                            name="text"
                                             required
+                                            onChange={(e) =>
+                                                handleOptionChange(e, index)
+                                            }
                                         />
                                     </div>
                                 </>
@@ -101,11 +214,17 @@ function CreateQuizModal(props) {
                 {/*  */}
             </Modal.Body>
             <Modal.Footer>
-            <Button variant="primary" className="me-auto ">
+                <Button
+                    type="submit"
+                    variant="success"
+                    className="me-auto "
+                    onClick={handleSave}
+                >
                     Save Question
                 </Button>
-                <Button variant="danger" onClick={props.onHide}>Close</Button>
-                
+                <Button variant="danger" onClick={props.onHide}>
+                    Close
+                </Button>
             </Modal.Footer>
         </Modal>
     );
